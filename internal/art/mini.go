@@ -27,7 +27,7 @@ var (
 	miniOpen   = miniEyes([2]string{"EW", "EE"}, [2]string{"EW", "EE"})
 	miniBlink  = miniEyes([2]string{"KK", "EE"}, [2]string{"KK", "EE"})
 	miniHappy  = []Patch{{X: 7, Y: 4, Rows: []string{"KEK", "EKE"}}, {X: 12, Y: 4, Rows: []string{"KEK", "EKE"}}}
-	miniSad    = miniEyes([2]string{"WW", "EE"}, [2]string{"WW", "EE"})
+	miniSad    = miniEyes([2]string{"EW", "EE"}, [2]string{"EW", "EE"})
 	miniSleepy = miniEyes([2]string{"KK", "EE"}, [2]string{"KK", "EE"})
 	miniLove   = miniEyes([2]string{"LL", "KL"}, [2]string{"LL", "LK"})
 	miniTongue = []Patch{{X: 10, Y: 9, Rows: []string{"TT", "Tt"}}}

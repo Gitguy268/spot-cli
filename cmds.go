@@ -126,6 +126,7 @@ func cmdRun(args []string) int {
 		return code
 	}
 	e.now = time.Now()
+	line = hook.Canonical(line)
 	var r pet.Reaction
 	st, uerr := e.update(func(st *pet.State) error {
 		if code == 0 {
@@ -258,6 +259,7 @@ func cmdEvent(args []string) (code int) {
 		fmt.Print(react.Face(e.peek().MoodAt(e.now), e.cfg.Prompt, shell, e.profile))
 		return 0
 	}
+	line = hook.Canonical(line)
 	var r pet.Reaction
 	st, err := e.update(func(st *pet.State) error {
 		if exit == 0 {

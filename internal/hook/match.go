@@ -161,3 +161,14 @@ func word(pattern, w string) bool {
 	}
 	return pattern == w
 }
+
+// Canonical is how Spot remembers a command: without leading VAR=value
+// settings and wrappers, so `BREAK=1 go test ./...` then `go test ./...`
+// counts as the same command going from red to green.
+func Canonical(line string) string {
+	var parts []string
+	for _, words := range segments(line) {
+		parts = append(parts, strings.Join(words, " "))
+	}
+	return strings.Join(parts, " && ")
+}

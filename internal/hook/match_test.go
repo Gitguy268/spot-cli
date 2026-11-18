@@ -77,3 +77,16 @@ func FuzzIsTest(f *testing.F) {
 	m := NewMatcher(nil, nil, nil)
 	f.Fuzz(func(t *testing.T, s string) { m.IsTest(s) })
 }
+
+func TestCanonical(t *testing.T) {
+	for in, want := range map[string]string{
+		"BREAK=1 go test ./...":      "go test ./...",
+		"sudo -E  go   test ./...":   "go test ./...",
+		"cd api && go test ./...":    "cd api && go test ./...",
+		"time CGO_ENABLED=0 go test": "go test",
+	} {
+		if got := Canonical(in); got != want {
+			t.Errorf("Canonical(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
