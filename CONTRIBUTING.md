@@ -36,7 +36,7 @@ gofmt -l .                              # prints nothing
 go vet ./...
 go test -race ./...
 python3 tests/shell_smoke.py ./spot     # real zsh, bash and fish through a pty
-go run ./internal/cmd/frames            # then git diff --exit-code site/
+go run ./internal/cmd/frames            # then git diff --exit-code site/frames.js
 ```
 
 ## Drawing Spot

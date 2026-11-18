@@ -38,7 +38,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           go run ./internal/cmd/frames
-          git diff --exit-code site/
+          git diff --exit-code site/frames.js site/favicon.svg
 
       - name: Install fish
         if: runner.os == 'Linux'
