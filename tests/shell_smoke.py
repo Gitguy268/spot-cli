@@ -2,13 +2,13 @@
 """Drives real interactive shells through a pty with the spot hook loaded.
 
 For each shell it runs a non-test command, a passing fake test and a failing
-one, then checks the state file: two runs, one green, one red, and a face in
-$SPOT_FACE. Usage: python3 tests/shell_smoke.py ./spot [zsh bash fish]
+one, twice each, then checks the state file: four runs, a comeback badge, and
+a face in $SPOT_FACE. bash runs a second time with HISTCONTROL=ignoreboth. Usage: python3 tests/shell_smoke.py ./spot [zsh bash fish]
 """
 import json, os, pty, select, shutil, subprocess, sys, tempfile, time
 
 spot = os.path.abspath(sys.argv[1])
-shells = sys.argv[2:] or ["zsh", "bash", "fish"]
+shells = sys.argv[2:] or ["zsh", "bash", "bash-ignoreboth", "fish"]
 
 
 def drive(argv, env, lines, timeout=20):
@@ -47,7 +47,7 @@ def drive(argv, env, lines, timeout=20):
 
 failed = False
 for sh in shells:
-    path = shutil.which(sh)
+    path = shutil.which(sh.split("-")[0])
     if not path:
         print(f"skip {sh}: not installed")
         continue
@@ -68,18 +68,22 @@ for sh in shells:
         env["ZDOTDIR"] = home
         argv = [path, "-i"]
         show = f'print -rn -- "$SPOT_FACE" > {face_file}'
-    elif sh == "bash":
+    elif sh.startswith("bash"):
         rc = os.path.join(home, ".bashrc")
-        open(rc, "w").write(f'HISTFILE={home}/hist; set -o history; eval "$({spot} init bash --prompt)"\n')
+        hc = "HISTCONTROL=ignoreboth; " if sh == "bash-ignoreboth" else ""
+        open(rc, "w").write(f'{hc}HISTFILE={home}/hist; set -o history; eval "$({spot} init bash --prompt)"\n')
         argv = [path, "--noprofile", "--rcfile", rc, "-i"]
         show = f'printf %s "$SPOT_FACE" > {face_file}'
     else:
         argv = [path, "--no-config", "-i", "-C", f"{spot} init fish --prompt | source"]
         show = f"printf %s $SPOT_FACE > {face_file}"
-    log = drive(argv, env, ["true", "pytest -q", "FAKE_EXIT=1 pytest -q" if sh != "fish" else "env FAKE_EXIT=1 pytest -q", show])
+    # red, red again (same line), green, green again: four runs and a comeback,
+    # even when the shell keeps repeated commands out of its history.
+    fail = "FAKE_EXIT=1 pytest -q" if sh != "fish" else "env FAKE_EXIT=1 pytest -q"
+    log = drive(argv, env, ["true", fail, fail, " echo hidden-from-history", "pytest -q", "pytest -q", show])
     st = json.load(open(os.path.join(home, "state.json"))) if os.path.exists(os.path.join(home, "state.json")) else {}
     face = open(face_file).read() if os.path.exists(face_file) else ""
-    ok = st.get("runs") == 2 and st.get("passes") == 1 and st.get("fails") == 1 and "ᴥ" in face
+    ok = st.get("runs") == 4 and st.get("passes") == 2 and st.get("fails") == 2 and "comeback" in st.get("badges", {}) and "ᴥ" in face
     print(f"{'ok  ' if ok else 'FAIL'} {sh}: runs={st.get('runs')} passes={st.get('passes')} fails={st.get('fails')} face={face!r}")
     if not ok:
         failed = True
