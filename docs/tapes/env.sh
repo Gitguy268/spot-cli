@@ -3,7 +3,7 @@
 #   vhs docs/tapes/hook.tape
 # Pass "light" to use Spot's light-terminal colours.
 SPOT_REPO=$PWD
-go build -o "$SPOT_REPO/spot" "$SPOT_REPO" || return
+go build -o "$SPOT_REPO/spot" "$SPOT_REPO/cmd/spot" || return
 export SPOT_HOME="$(mktemp -d)"
 export SPOT_CONFIG="$SPOT_HOME" PATH="$SPOT_REPO:$PATH"
 [ "$1" = light ] && printf 'theme = "light"\n' > "$SPOT_CONFIG/config.toml"
