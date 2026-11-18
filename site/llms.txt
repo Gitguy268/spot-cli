@@ -1,0 +1,23 @@
+# spot
+
+> spot is a terminal pet for developers. Spot, a black labrador with a red collar, lives in your shell: a small face in your prompt, a one-second pixel-art reaction after every test run (a wag for green, comfort for red, zoomies when you fix a broken run), and a full-screen room where you pet, feed and play fetch with him. MIT licensed, written in Go, one binary, no daemon, no network.
+
+## Install
+
+- Homebrew: `brew install gitguy268/tap/spot-cli` (run `brew trust gitguy268/tap` first on new Homebrew)
+- Go: `go install github.com/Gitguy268/spot-cli/cmd/spot@latest`
+- Binaries for macOS, Linux and Windows: https://github.com/Gitguy268/spot-cli/releases/latest
+
+## Set up
+
+- zsh: `eval "$(spot init zsh --prompt)"` in ~/.zshrc
+- bash: `eval "$(spot init bash --prompt)"` in ~/.bashrc
+- fish: `spot init fish --prompt | source` in config.fish
+- PowerShell: `Invoke-Expression (& spot init pwsh --prompt | Out-String)` in $PROFILE
+- Without hooks: `spot run -- go test ./...` (keeps the exit code, silent when not on a terminal)
+
+## Docs
+
+- [README](https://github.com/Gitguy268/spot-cli/blob/main/README.md): features, commands, config, limits
+- [Contributing](https://github.com/Gitguy268/spot-cli/blob/main/CONTRIBUTING.md): build, checks, drawing Spot
+- [Changelog](https://github.com/Gitguy268/spot-cli/blob/main/CHANGELOG.md)

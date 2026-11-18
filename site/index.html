@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>spot: a black lab who lives in your terminal</title>
+<meta name="description" content="spot is a terminal pet. Spot the black labrador lives in your shell, gets hungry, and wags when your tests pass. Free and open source (MIT).">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="canonical" href="https://gitguy268.github.io/spot-cli/">
+<meta property="og:title" content="spot: a black lab who lives in your terminal">
+<meta property="og:description" content="Spot gets hungry, and wags when your tests pass.">
+<meta property="og:image" content="https://gitguy268.github.io/spot-cli/og.png">
+<meta property="og:url" content="https://gitguy268.github.io/spot-cli/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root {
+  --bg: #fbf8f3; --panel: #ffffff; --ink: #24232b; --muted: #6b6878; --line: #e7e1d6;
+  --red: #d8373d; --gold: #b07a10; --term: #1e1e2e; --term-ink: #cdd6f4; --term-dim: #9399b2;
+  --blue: #3d6fd9; --green: #3f8f2a; --shadow: 0 1px 2px rgba(40,30,20,.06), 0 8px 24px rgba(40,30,20,.06);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15151f; --panel: #1d1d2b; --ink: #e8e6f2; --muted: #a09db4; --line: #2c2b3d;
+    --red: #ff6b6b; --gold: #ffc94a; --term: #11111b; --blue: #7fa8ff; --green: #9fdc6a;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15151f; --panel: #1d1d2b; --ink: #e8e6f2; --muted: #a09db4; --line: #2c2b3d;
+  --red: #ff6b6b; --gold: #ffc94a; --term: #11111b; --blue: #7fa8ff; --green: #9fdc6a;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 17px/1.6 ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+a { color: var(--blue); text-underline-offset: 3px; }
+code, pre, .term { font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+header.top { display: flex; align-items: center; justify-content: space-between; padding: 18px 16px; }
+.brand { display: flex; gap: 10px; align-items: center; font-weight: 700; font-size: 20px; color: var(--ink); text-decoration: none; }
+.brand img { width: 30px; height: 30px; image-rendering: pixelated; }
+nav { display: flex; gap: 18px; align-items: center; font-size: 15px; }
+nav a { color: var(--muted); text-decoration: none; }
+nav a:hover { color: var(--ink); }
+.toggle { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 999px; padding: 4px 10px; font: inherit; font-size: 14px; cursor: pointer; }
+
+.hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: 40px; align-items: center; padding: 30px 16px 56px; }
+.hero h1 { font-size: clamp(38px, 6vw, 60px); line-height: 1.05; margin: 0 0 16px; letter-spacing: -0.02em; }
+.hero h1 .red { color: var(--red); }
+.hero p.lead { font-size: 19px; color: var(--muted); margin: 0 0 24px; max-width: 34em; }
+.stage { background: var(--term); border-radius: 18px; box-shadow: var(--shadow); padding: 16px; position: relative; }
+.stage canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; cursor: pointer; }
+.caption { min-height: 1.6em; color: var(--term-ink); text-align: center; font-size: 15px; margin-top: 6px; }
+.buttons { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 12px; }
+.buttons button {
+  border: 0; border-radius: 10px; padding: 8px 14px; font: inherit; font-size: 14px; cursor: pointer;
+  background: #2c2c42; color: #e8e6f2;
+}
+.buttons button:hover { background: #3a3a57; }
+.buttons button:focus-visible, .toggle:focus-visible, .tabs button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.cta { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 18px; border-radius: 12px; font-weight: 600; text-decoration: none; font-size: 16px; }
+.btn.primary { background: var(--red); color: #fff; }
+.btn.ghost { border: 1px solid var(--line); color: var(--ink); background: var(--panel); }
+.install-one { margin-top: 18px; display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; max-width: 30em; }
+.install-one code { flex: 1; overflow-x: auto; white-space: nowrap; font-size: 14px; }
+.copy { border: 0; background: transparent; color: var(--muted); cursor: pointer; font: inherit; font-size: 13px; }
+
+section { padding: 48px 0; border-top: 1px solid var(--line); }
+section h2 { font-size: 30px; margin: 0 0 8px; letter-spacing: -0.01em; }
+section .sub { color: var(--muted); margin: 0 0 26px; }
+
+.term { background: var(--term); color: var(--term-ink); border-radius: 16px; padding: 18px 20px; font-size: 14px; line-height: 1.5; min-height: 420px; box-shadow: var(--shadow); overflow: hidden; }
+.term .bar { display: flex; gap: 7px; margin-bottom: 14px; }
+.term .bar i { width: 11px; height: 11px; border-radius: 50%; background: #45475a; display: block; }
+.term .line { white-space: pre-wrap; word-break: break-word; }
+.term .dim { color: var(--term-dim); }
+.term .ok { color: #a6e3a1; }
+.term .bad { color: #f38ba8; }
+.term .face .u { color: #8a90b8; } .term .face .n { color: #ff8fb4; } .term .face .g { color: #ffc94a; }
+.term .path { color: #89b4fa; }
+.term .react { display: flex; align-items: center; gap: 18px; margin: 2px 0 6px; }
+.term .react canvas { image-rendering: pixelated; width: 110px; height: auto; }
+.term .react .name { color: #ff6b6b; font-weight: 700; }
+.term .react .gold { color: #ffc94a; }
+
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 20px; box-shadow: var(--shadow); }
+.card h3 { margin: 0 0 6px; font-size: 18px; }
+.card p { margin: 0; color: var(--muted); font-size: 15.5px; }
+.card .ico { font-size: 24px; margin-bottom: 8px; display: block; }
+
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.tabs button { border: 1px solid var(--line); background: var(--panel); color: var(--muted); padding: 6px 14px; border-radius: 999px; cursor: pointer; font: inherit; font-size: 15px; }
+.tabs button[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+pre.code { background: var(--term); color: var(--term-ink); border-radius: 12px; padding: 16px 18px; overflow-x: auto; font-size: 14px; line-height: 1.6; margin: 0 0 14px; }
+pre.code .c { color: var(--term-dim); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.two > *, .hero > * { min-width: 0; }
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+td { padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+td:first-child { white-space: nowrap; padding-right: 16px; }
+td code { font-size: 14px; }
+.badges { display: flex; flex-wrap: wrap; gap: 8px; }
+.badge { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; font-size: 14.5px; }
+footer { padding: 36px 0 60px; color: var(--muted); font-size: 14.5px; border-top: 1px solid var(--line); }
+footer .wrap { display: flex; gap: 16px; justify-content: space-between; flex-wrap: wrap; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+@media (max-width: 860px) {
+  .hero { grid-template-columns: 1fr; gap: 28px; padding-top: 10px; }
+  .grid { grid-template-columns: 1fr 1fr; }
+  .two { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .grid { grid-template-columns: 1fr; }
+  nav a.hide-sm { display: none; }
+  .term { font-size: 12.5px; padding: 14px; min-height: 380px; }
+  .term .react canvas { width: 84px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<header class="wrap top">
+  <a class="brand" href="./"><img src="favicon.svg" alt="" width="30" height="30">spot</a>
+  <nav>
+    <a href="#demo" class="hide-sm">Demo</a>
+    <a href="#install">Install</a>
+    <a href="#commands" class="hide-sm">Commands</a>
+    <a href="https://github.com/Gitguy268/spot-cli">GitHub</a>
+    <button class="toggle" id="theme" type="button" aria-label="Switch between light and dark">◐</button>
+  </nav>
+</header>
+
+<main>
+<div class="wrap hero">
+  <div>
+    <h1>A black lab who lives in your <span class="red">terminal</span>.</h1>
+    <p class="lead">Spot sits in your prompt, gets hungry over the day, and wags when your tests pass. Break the build and he puts his head on your knee. Fix it and he does zoomies.</p>
+    <div class="cta">
+      <a class="btn primary" href="#install">Get Spot</a>
+      <a class="btn ghost" href="https://github.com/Gitguy268/spot-cli">Source on GitHub</a>
+    </div>
+    <div class="install-one">
+      <code id="one">brew install gitguy268/tap/spot-cli</code>
+      <button class="copy" type="button" data-copy="one">copy</button>
+    </div>
+  </div>
+  <div class="stage">
+    <canvas id="room" width="64" height="36" role="img" aria-label="Spot the black labrador sitting on his rug, wagging his tail"></canvas>
+    <div class="caption" id="caption" aria-live="polite">Click Spot to pet him.</div>
+    <div class="buttons">
+      <button type="button" data-act="pet">🫶 Pet</button>
+      <button type="button" data-act="feed">🦴 Feed</button>
+      <button type="button" data-act="fail">🔴 Break the build</button>
+      <button type="button" data-act="pass">🟢 Pass the tests</button>
+      <button type="button" data-act="trick">✦ Trick</button>
+    </div>
+  </div>
+</div>
+
+<section id="demo">
+  <div class="wrap">
+    <h2>He watches your tests</h2>
+    <p class="sub">One line in your shell config and Spot notices <code>go test</code>, <code>npm test</code>, <code>pytest</code>, <code>cargo test</code> and fifty other test commands. A one-second reaction, then he waits in your scrollback.</p>
+    <div class="term" id="term" aria-label="An animated terminal session where Spot reacts to tests passing, failing and being fixed">
+      <div class="bar"><i></i><i></i><i></i></div>
+      <div id="lines"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>A good boy, not a chore</h2>
+    <p class="sub">Spot is built to make your day nicer, not to guilt you.</p>
+    <div class="grid">
+      <div class="card"><span class="ico">🟢</span><h3>Reacts to every test run</h3><p>A wag and a treat for green, comfort for red, and zoomies across the screen when you fix a broken run.</p></div>
+      <div class="card"><span class="ico">🐶</span><h3>Lives in your prompt</h3><p>A tiny <code>U^ᴥ^U</code> next to your prompt shows how he feels. It costs a few milliseconds.</p></div>
+      <div class="card"><span class="ico">🏠</span><h3>Has his own room</h3><p>Run <code>spot</code> to pet him, feed him, play fetch and see his tricks. Tests in other terminals show up there live.</p></div>
+      <div class="card"><span class="ico">🦴</span><h3>Never dies</h3><p>He gets hungry and a bit blue if you're away, then sleeps by the door. A free bowl of kibble every four hours.</p></div>
+      <div class="card"><span class="ico">✦</span><h3>Learns tricks</h3><p>Pass streaks and a strong bond teach him high five, speak, roll over, spin and play sleepy. Twelve badges to earn together.</p></div>
+      <div class="card"><span class="ico">◐</span><h3>Fits your terminal</h3><p>Dark and light themes, 16 colours, no colour at all, and small windows. zsh, bash, fish and PowerShell.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap two">
+    <div>
+      <h2>Install</h2>
+      <p class="sub">One binary, no daemon, no network.</p>
+      <div class="tabs" role="tablist" data-group="inst">
+        <button role="tab" aria-selected="true" data-tab="brew">Homebrew</button>
+        <button role="tab" aria-selected="false" data-tab="go">Go</button>
+        <button role="tab" aria-selected="false" data-tab="bin">Download</button>
+      </div>
+      <pre class="code" data-panel="inst" data-name="brew">brew trust gitguy268/tap   <span class="c"># once, for new Homebrew</span>
+brew install gitguy268/tap/spot-cli</pre>
+      <pre class="code" data-panel="inst" data-name="go" hidden>go install github.com/Gitguy268/spot-cli/cmd/spot@latest</pre>
+      <pre class="code" data-panel="inst" data-name="bin" hidden><span class="c"># macOS, Linux and Windows builds:</span>
+https://github.com/Gitguy268/spot-cli/releases/latest</pre>
+    </div>
+    <div>
+      <h2>Bring him home</h2>
+      <p class="sub">Add one line to your shell config, then open a new terminal.</p>
+      <div class="tabs" role="tablist" data-group="sh">
+        <button role="tab" aria-selected="true" data-tab="zsh">zsh</button>
+        <button role="tab" aria-selected="false" data-tab="bash">bash</button>
+        <button role="tab" aria-selected="false" data-tab="fish">fish</button>
+        <button role="tab" aria-selected="false" data-tab="pwsh">PowerShell</button>
+      </div>
+      <pre class="code" data-panel="sh" data-name="zsh"><span class="c"># ~/.zshrc, after your theme</span>
+eval "$(spot init zsh --prompt)"</pre>
+      <pre class="code" data-panel="sh" data-name="bash" hidden><span class="c"># ~/.bashrc</span>
+eval "$(spot init bash --prompt)"</pre>
+      <pre class="code" data-panel="sh" data-name="fish" hidden><span class="c"># ~/.config/fish/config.fish</span>
+spot init fish --prompt | source</pre>
+      <pre class="code" data-panel="sh" data-name="pwsh" hidden><span class="c"># $PROFILE</span>
+Invoke-Expression (&amp; spot init pwsh --prompt | Out-String)</pre>
+      <p class="sub" style="font-size:15px">Leave out <code>--prompt</code> to keep your prompt as it is and use <code>$SPOT_FACE</code> yourself, for example in starship or p10k. Not using hooks? <code>spot run -- go test ./...</code> works anywhere and keeps the exit code.</p>
+    </div>
+  </div>
+</section>
+
+<section id="commands">
+  <div class="wrap two">
+    <div>
+      <h2>Commands</h2>
+      <table>
+        <tr><td><code>spot</code></td><td>Spot's room: pet, feed, fetch, tricks</td></tr>
+        <tr><td><code>spot run -- CMD</code></td><td>Run tests with Spot watching</td></tr>
+        <tr><td><code>spot status</code></td><td>How he's doing (<code>--json</code> for scripts)</td></tr>
+        <tr><td><code>spot feed</code> · <code>spot pet</code></td><td>Treats and ear scratches</td></tr>
+        <tr><td><code>spot tricks</code></td><td>What he knows, and how he learns the rest</td></tr>
+        <tr><td><code>spot badges</code> · <code>spot stats</code></td><td>Your history together</td></tr>
+        <tr><td><code>spot rename NAME</code></td><td>He answers to anything said kindly</td></tr>
+      </table>
+    </div>
+    <div>
+      <h2>Badges</h2>
+      <p class="sub">Twelve little things to earn together.</p>
+      <div class="badges">
+        <span class="badge">🌱 First green</span><span class="badge">🔁 Comeback pup</span><span class="badge">🔟 Busy day</span>
+        <span class="badge">🔥 On fire</span><span class="badge">📅 Good week</span><span class="badge">💯 Century</span>
+        <span class="badge">🦉 Night owl</span><span class="badge">🐦 Early bird</span><span class="badge">⏳ Patient pup</span>
+        <span class="badge">💞 Best friends</span><span class="badge">🫶 Belly rubs</span><span class="badge">🎾 Fetch champ</span>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>spot is free and open source under the <a href="https://github.com/Gitguy268/spot-cli/blob/main/LICENSE">MIT License</a>. Spot is a real black lab.</span>
+    <span><a href="https://github.com/Gitguy268/spot-cli">GitHub</a> · <a href="https://gitguy268.github.io/">More projects</a> · <a href="llms.txt">llms.txt</a></span>
+  </div>
+</footer>
+
+<script src="frames.js"></script>
+<script>
+(() => {
+  const F = window.SPOT_FRAMES;
+  const root = document.documentElement;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---- theme ----
+  let saved = null;
+  try { saved = localStorage.getItem("spot-theme"); } catch (e) {}
+  if (saved) root.dataset.theme = saved;
+  const isDark = () => root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  document.getElementById("theme").addEventListener("click", () => {
+    root.dataset.theme = isDark() ? "light" : "dark";
+    try { localStorage.setItem("spot-theme", root.dataset.theme); } catch (e) {}
+  });
+
+  // ---- drawing ----
+  // The stage and the terminal are always dark, so Spot uses his dark palette there.
+  const pal = F.palettes.dark;
+  function draw(ctx, sprite, ox, oy) {
+    for (let y = 0; y < sprite.length; y++) {
+      const row = sprite[y];
+      for (let x = 0; x < row.length; x++) {
+        const c = pal[row[x]];
+        if (c) { ctx.fillStyle = c; ctx.fillRect(ox + x, oy + y, 1, 1); }
+      }
+    }
+  }
+  function ellipse(ctx, cx, cy, rx, ry, col) {
+    ctx.fillStyle = col;
+    for (let y = 0; y < ctx.canvas.height; y++) for (let x = 0; x < ctx.canvas.width; x++) {
+      const dx = (x + .5 - cx) / rx, dy = (y + .5 - cy) / ry;
+      if (dx * dx + dy * dy <= 1) ctx.fillRect(x, y, 1, 1);
+    }
+  }
+  const frame = (name, t) => { const a = F.anims[name]; return a.frames[Math.floor(t * a.fps / 12) % a.frames.length]; };
+
+  // ---- the room ----
+  const canvas = document.getElementById("room"), ctx = canvas.getContext("2d");
+  const caption = document.getElementById("caption");
+  let tick = 0, anim = "wag", until = 24, runX = -32, parts = [], food = 70, broken = false;
+  function play(name, ticks, text) { anim = name; until = tick + ticks; if (name === "zoomies") runX = -32; if (text) caption.textContent = text; }
+  function hearts() { for (let i = 0; i < 5; i++) parts.push({ x: 19 + i * 6, y: 3 - (i % 2) * 3, vx: (i - 2) * .15, vy: -.5 - (i % 2) * .2, s: F.props.heart, life: 30 }); }
+  function sparkles() { for (let i = 0; i < 3; i++) parts.push({ x: 20 + i * 10, y: 4, vx: 0, vy: -.4, s: F.props.sparkle, life: 16 }); }
+  const pets = ["Spot leans into the scratches", "Spot's back leg thumps", "Spot melts. 10/10 ear scratch", "Spot gives you a slow blink"];
+  const acts = {
+    pet() { play("love", 30, pets[Math.floor(Math.random() * pets.length)]); hearts(); },
+    feed() { food = 100; play("eat", 36, "nom nom nom"); },
+    fail() { broken = true; play("sad", 48, "red: go test ./... · Spot puts his head on your knee"); },
+    pass() {
+      if (broken) { broken = false; play("zoomies", 40, "red to green! Spot does zoomies 🔁"); }
+      else play("wag", 30, "green! Spot wags · +1 🦴");
+      sparkles();
+    },
+    trick() { const t = ["paw", "roll", "spin", "wow"][Math.floor(Math.random() * 4)]; play(t, 36, { paw: "High five!", roll: "Roll over!", spin: "Spin!", wow: "WOOF!" }[t]); },
+  };
+  document.querySelectorAll("[data-act]").forEach(b => b.addEventListener("click", () => acts[b.dataset.act]()));
+  canvas.addEventListener("click", () => acts.pet());
+
+  function room() {
+    tick++;
+    const busy = tick < until;
+    if (!busy) anim = broken ? "sad" : "idle";
+    if (anim === "zoomies") { runX += 3; if (runX > 64) runX = -32; }
+    ctx.clearRect(0, 0, 64, 36);
+    ellipse(ctx, 32, 33.5, 26, 3.6, pal.D);
+    for (let x = 10; x < 55; x += 6) draw(ctx, ["d", "d"], x, 32);
+    if (anim !== "eat" && anim !== "zoomies") draw(ctx, food >= 60 ? F.props.bowlFull : F.props.bowl, 49, 27);
+    draw(ctx, F.props.ball, 6, 30);
+    const f = frame(anim, tick);
+    if (anim === "zoomies") draw(ctx, f, Math.round(runX), 12); else draw(ctx, f, 16, 4);
+    parts = parts.filter(p => (p.x += p.vx, p.y += p.vy, --p.life > 0));
+    parts.forEach(p => draw(ctx, p.s, Math.round(p.x), Math.round(p.y)));
+    if (tick % 120 === 0) food = Math.max(20, food - 10);
+  }
+
+  // ---- the terminal demo ----
+  const lines = document.getElementById("lines");
+  const faces = { happy: "^ᴥ^", sad: "╥ᴥ╥", proud: "^ᴥ^" };
+  let minis = [];
+  function face(m) { const e = faces[m]; return `<span class="face"><span class="u">U</span>${e[0]}<span class="n">${e[1]}</span>${e[2]}<span class="u">U</span>${m === "proud" ? '<span class="g">✦</span>' : ""}</span>`; }
+  function add(html, cls) { const d = document.createElement("div"); d.className = "line " + (cls || ""); d.innerHTML = html; lines.appendChild(d); return d; }
+  function reaction(name, texts) {
+    const d = document.createElement("div"); d.className = "react";
+    const c = document.createElement("canvas"); c.width = 22; c.height = 14; d.appendChild(c);
+    const t = document.createElement("div"); t.innerHTML = texts.join("<br>"); d.appendChild(t);
+    lines.appendChild(d); minis.push({ ctx: c.getContext("2d"), name, start: tick, done: false });
+  }
+  const sleep = ms => new Promise(r => setTimeout(r, reduce ? Math.min(ms, 300) : ms));
+  async function type(el, text) { for (const ch of text) { el.insertAdjacentText("beforeend", ch); await sleep(45); } }
+  async function prompt(mood, cmd) { const l = add(`${face(mood)} <span class="path">~/my-app</span> % `); await sleep(500); await type(l, cmd); await sleep(350); }
+  async function demo() {
+    for (;;) {
+      lines.innerHTML = ""; minis = [];
+      await prompt("happy", "go test ./...");
+      add('<span class="ok">ok</span>  \texample.com/app\t0.214s');
+      reaction("mini-wag", ['<span class="name">Spot</span> wags his tail', '<span class="dim">+1 🦴 · streak 4</span>']);
+      await sleep(2200);
+      await prompt("proud", "BREAK=1 go test ./...");
+      add('<span class="bad">--- FAIL: TestAdd (0.00s)</span>\n    app_test.go:10: 2 + 2 = 5\n<span class="bad">FAIL</span>');
+      reaction("mini-sad", ['<span class="name">Spot</span> brings you a sock for comfort', '<span class="dim">5 🦴 saved up</span>']);
+      await sleep(2400);
+      await prompt("sad", "go test ./...");
+      add('<span class="ok">ok</span>  \texample.com/app\t0.198s');
+      reaction("mini-wag", ['<span class="name">Spot</span> knew you could do it. ZOOMIES.', '<span class="dim">+2 🦴</span>', '<span class="gold">🔁 badge: Comeback pup</span>']);
+      await sleep(3200);
+      add(`${face("proud")} <span class="path">~/my-app</span> % <span class="dim">▌</span>`);
+      await sleep(4000);
+    }
+  }
+  function terminal() {
+    minis.forEach(m => {
+      if (m.done) return;
+      const age = tick - m.start;
+      m.ctx.clearRect(0, 0, 22, 14);
+      draw(m.ctx, age < 15 ? frame(m.name, age) : F.anims[m.name].frames[0], 0, 0);
+      if (age >= 15) m.done = true;
+    });
+  }
+
+  // ---- install tabs and copy ----
+  document.querySelectorAll(".tabs").forEach(tabs => {
+    tabs.addEventListener("click", e => {
+      const b = e.target.closest("button"); if (!b) return;
+      tabs.querySelectorAll("button").forEach(x => x.setAttribute("aria-selected", x === b));
+      document.querySelectorAll(`[data-panel="${tabs.dataset.group}"]`).forEach(p => p.hidden = p.dataset.name !== b.dataset.tab);
+    });
+  });
+  document.querySelectorAll("[data-copy]").forEach(b => b.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(document.getElementById(b.dataset.copy).textContent); b.textContent = "copied"; setTimeout(() => b.textContent = "copy", 1500); } catch (e) {}
+  }));
+
+  // ---- one clock for everything, 12 fps like the terminal ----
+  let last = 0;
+  function loop(t) {
+    if (t - last >= 1000 / 12) { last = t; room(); terminal(); }
+    requestAnimationFrame(loop);
+  }
+  if (reduce) { anim = "idle"; room(); setInterval(() => { room(); terminal(); }, 500); } else requestAnimationFrame(loop);
+  demo();
+})();
+</script>
+</body>
+</html>

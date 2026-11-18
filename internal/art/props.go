@@ -89,3 +89,9 @@ func (c *Canvas) Sprite() Sprite {
 	}
 	return out
 }
+
+// Props by name, for the web page.
+var Props = map[string]Sprite{
+	"heart": Heart, "heartTiny": HeartTiny, "bigZ": BigZ, "smallZ": SmallZ, "ball": Ball,
+	"bone": Bone, "sparkle": Sparkle, "drop": Drop, "bowl": Bowl, "bowlFull": BowlFull, "blanket": Blanket,
+}
