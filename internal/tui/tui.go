@@ -53,6 +53,7 @@ type model struct {
 
 	w, h    int
 	pal     art.Palette
+	sty     styles
 	profile colorprofile.Profile
 	tick    int
 
@@ -98,9 +99,9 @@ func newModel(s *store.Store, cfg store.Config, now func() time.Time) (*model, e
 	if errors.Is(err, store.ErrCorrupt) {
 		m.say("Spot's old memories were unreadable, so he starts over as a puppy", 60)
 	}
-	switch cfg.Theme {
-	case "light":
-		m.pal = art.Light
+	m.sty = newStyles(false)
+	if cfg.Theme == "light" {
+		m.pal, m.sty = art.Light, newStyles(true)
 	}
 	st.Tick(now())
 	if st.Last != nil {
@@ -178,7 +179,7 @@ func (m *model) react(r pet.Reaction) {
 	switch r.Anim {
 	case "love":
 		for i := range 5 {
-			m.parts = append(m.parts, particle{x: float64(spotX + 8 + i*4), y: spotY + 4, vx: (float64(i) - 2) * .15, vy: -.5 - float64(i%2)*.2, s: art.Heart, life: 30})
+			m.parts = append(m.parts, particle{x: float64(spotX + 3 + i*6), y: float64(spotY - 1 - (i%2)*3), vx: (float64(i) - 2) * .15, vy: -.5 - float64(i%2)*.2, s: art.Heart, life: 30})
 		}
 	case "wag", "zoomies":
 		for i := range 3 {
@@ -218,7 +219,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.profile = msg.Profile
 	case tea.BackgroundColorMsg:
 		if !msg.IsDark() {
-			m.pal = art.Light
+			m.pal, m.sty = art.Light, newStyles(true)
 		}
 	case tickMsg:
 		m.step()

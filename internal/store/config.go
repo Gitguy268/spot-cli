@@ -10,8 +10,8 @@ import (
 
 // Config is ~/.config/spot/config.toml. Every field is optional.
 type Config struct {
-	// Reactions after a test run: "full" (animation), "short" (one still
-	// picture and a line) or "off".
+	// Reactions after a test run: "full" (a short animation that stays in
+	// the scrollback), "short" (one line) or "off".
 	Reactions string `toml:"reactions"`
 	// Theme picks Spot's colours: "auto", "dark" or "light". Auto looks at
 	// COLORFGBG in the shell and asks the terminal in the full-screen app.
@@ -77,8 +77,8 @@ func LoadConfig() (Config, error) {
 // Example is written by `spot config init`.
 const Example = `# spot config. Every line is optional.
 
-# What Spot does after a test run: "full" (a short animation),
-# "short" (one still picture and a line) or "off".
+# What Spot does after a test run: "full" (a one-second animation that
+# stays in your scrollback), "short" (one line) or "off".
 reactions = "full"
 
 # Colours: "auto", "dark" or "light". Spot has a light rim on dark

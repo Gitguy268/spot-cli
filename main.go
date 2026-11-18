@@ -130,21 +130,28 @@ func newEnv() (*env, error) {
 	return e, nil
 }
 
-// palette follows the theme setting; "auto" reads COLORFGBG ("15;0" is
+// light follows the theme setting; "auto" reads COLORFGBG ("15;0" is
 // light text on dark), and assumes dark when it isn't set.
-func (e *env) palette() art.Palette {
+func (e *env) light() bool {
 	switch e.cfg.Theme {
 	case "light":
-		return art.Light
+		return true
 	case "dark":
-		return art.Dark
+		return false
 	}
 	if v := os.Getenv("COLORFGBG"); v != "" {
 		parts := strings.Split(v, ";")
 		switch parts[len(parts)-1] {
 		case "7", "15":
-			return art.Light
+			return true
 		}
+	}
+	return false
+}
+
+func (e *env) palette() art.Palette {
+	if e.light() {
+		return art.Light
 	}
 	return art.Dark
 }
@@ -156,7 +163,7 @@ func (e *env) opts() react.Opts {
 	if !e.tty {
 		mode = "off"
 	}
-	return react.Opts{Out: os.Stderr, Profile: e.profile, Pal: e.palette(), Width: e.width, Mode: mode}
+	return react.Opts{Out: os.Stderr, Profile: e.profile, Pal: e.palette(), Light: e.light(), Width: e.width, Mode: mode}
 }
 
 func fail(err error) int {

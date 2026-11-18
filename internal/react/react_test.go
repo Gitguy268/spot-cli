@@ -16,12 +16,12 @@ import (
 func TestFaceEveryMood(t *testing.T) {
 	for _, m := range []pet.Mood{pet.Asleep, pet.Hungry, pet.Sad, pet.Proud, pet.Happy, pet.Content, pet.Sleepy, "unknown"} {
 		for _, style := range []string{"face", "emoji", "ascii"} {
-			f := Face(m, style, "", colorprofile.TrueColor)
+			f := Face(m, style, "", colorprofile.TrueColor, false)
 			if f == "" || strings.Contains(f, "\n") {
 				t.Errorf("Face(%s, %s) = %q", m, style, f)
 			}
 		}
-		if f := Face(m, "ascii", "", colorprofile.TrueColor); strings.ContainsAny(f, "\x1b") || !isASCII(f) {
+		if f := Face(m, "ascii", "", colorprofile.TrueColor, false); strings.ContainsAny(f, "\x1b") || !isASCII(f) {
 			t.Errorf("ascii face %q is not plain ASCII", f)
 		}
 	}
@@ -37,15 +37,15 @@ func isASCII(s string) bool {
 }
 
 func TestFaceWrapsEscapesForTheShell(t *testing.T) {
-	z := Face(pet.Happy, "face", "zsh", colorprofile.TrueColor)
+	z := Face(pet.Happy, "face", "zsh", colorprofile.TrueColor, false)
 	if !strings.Contains(z, "%{\x1b[") || strings.Count(z, "%{") != strings.Count(z, "%}") {
 		t.Fatalf("zsh face doesn't wrap escapes: %q", z)
 	}
-	b := Face(pet.Happy, "face", "bash", colorprofile.TrueColor)
+	b := Face(pet.Happy, "face", "bash", colorprofile.TrueColor, false)
 	if !strings.Contains(b, "\x01\x1b[") || strings.Count(b, "\x01") != strings.Count(b, "\x02") {
 		t.Fatalf("bash face doesn't wrap escapes: %q", b)
 	}
-	if p := Face(pet.Happy, "face", "", colorprofile.NoTTY); strings.Contains(p, "\x1b") {
+	if p := Face(pet.Happy, "face", "", colorprofile.NoTTY, false); strings.Contains(p, "\x1b") {
 		t.Fatalf("NoTTY face has colour: %q", p)
 	}
 }

@@ -21,6 +21,7 @@ type Opts struct {
 	Profile colorprofile.Profile
 	Pal     art.Palette
 	Width   int    // terminal columns; 0 means 80
+	Light   bool   // light terminal background
 	Mode    string // "full", "short" or "off"
 	FPS     int    // 0 means 12
 	Sleep   func(time.Duration)
@@ -55,10 +56,11 @@ var miniFor = map[string]string{
 }
 
 // Lines is the text shown next to Spot for a reaction.
-func Lines(r pet.Reaction, st *pet.State, p colorprofile.Profile) []string {
-	name := paint(p, "#ff6b6b", true)
-	dim := paint(p, "#9aa0c0", false)
-	gold := paint(p, "#ffc94a", false)
+func Lines(r pet.Reaction, st *pet.State, p colorprofile.Profile, light bool) []string {
+	c := Colours(light)
+	name := paint(p, c.Name, true)
+	dim := paint(p, c.Dim, false)
+	gold := paint(p, c.Gold, false)
 	text := r.Text
 	if st != nil && strings.HasPrefix(text, st.Name) {
 		text = name(st.Name) + text[len(st.Name):]
@@ -95,13 +97,13 @@ func Play(o Opts, r pet.Reaction, st *pet.State) {
 	if o.Mode == "off" {
 		return
 	}
-	lines := Lines(r, st, o.Profile)
+	lines := Lines(r, st, o.Profile, o.Light)
 	mood := pet.Content
 	if st != nil {
 		mood = st.MoodAt(time.Now())
 	}
 	if o.Mode == "short" || o.width() < 48 {
-		f := Face(moodFor(r, mood), "face", "", o.Profile)
+		f := Face(moodFor(r, mood), "face", "", o.Profile, o.Light)
 		fmt.Fprintln(o.Out, f+"  "+strings.Join(lines, "  "))
 		return
 	}

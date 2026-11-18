@@ -108,7 +108,7 @@ func cmdRun(args []string) int {
 	line := strings.Join(args, " ")
 	if o.Mode != "off" {
 		st := e.peek()
-		fmt.Fprintln(os.Stderr, react.Face(pet.Content, "face", "", o.Profile)+"  "+st.Name+" sits and watches "+line)
+		fmt.Fprintln(os.Stderr, react.Face(pet.Content, "face", "", o.Profile, o.Light)+"  "+st.Name+" sits and watches "+line)
 	}
 
 	c := exec.Command(args[0], args[1:]...)
@@ -198,7 +198,7 @@ func cmdPrompt(args []string) int {
 	if err != nil {
 		return 0 // never break a prompt
 	}
-	fmt.Print(react.Face(e.peek().MoodAt(e.now), e.cfg.Prompt, shell, e.profile))
+	fmt.Print(react.Face(e.peek().MoodAt(e.now), e.cfg.Prompt, shell, e.profile, e.light()))
 	return 0
 }
 
@@ -256,7 +256,7 @@ func cmdEvent(args []string) (code int) {
 	}
 	m := hook.NewMatcher(e.cfg.TestCommands, e.cfg.ExtraTestCommands, e.cfg.IgnoreCommands)
 	if exit < 0 || !m.IsTest(line) || slices.Contains(interruptCodes, exit) {
-		fmt.Print(react.Face(e.peek().MoodAt(e.now), e.cfg.Prompt, shell, e.profile))
+		fmt.Print(react.Face(e.peek().MoodAt(e.now), e.cfg.Prompt, shell, e.profile, e.light()))
 		return 0
 	}
 	line = hook.Canonical(line)
@@ -274,7 +274,7 @@ func cmdEvent(args []string) (code int) {
 	} else {
 		react.Play(e.opts(), r, st)
 	}
-	fmt.Print(react.Face(st.MoodAt(e.now), e.cfg.Prompt, shell, e.profile))
+	fmt.Print(react.Face(st.MoodAt(e.now), e.cfg.Prompt, shell, e.profile, e.light()))
 	return 0
 }
 

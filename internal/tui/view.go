@@ -9,16 +9,27 @@ import (
 
 	"github.com/Gitguy268/spot-cli/internal/art"
 	"github.com/Gitguy268/spot-cli/internal/pet"
+	"github.com/Gitguy268/spot-cli/internal/react"
 )
 
-var (
-	nameStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#ff6b6b"))
-	dimStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#8a90b8"))
-	textStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#d8dcf5"))
-	goldStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#ffc94a"))
-	keyStyle  = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#ffc94a"))
-	barColour = map[string]string{"food": "#ffb35c", "joy": "#ff6f9c", "energy": "#7fb2ff", "bond": "#c4f05a"}
-)
+type styles struct {
+	name, dim, text, gold, key, err lipgloss.Style
+	bars                            map[string]string
+}
+
+func newStyles(light bool) styles {
+	c := react.Colours(light)
+	fg := func(hex string) lipgloss.Style { return lipgloss.NewStyle().Foreground(lipgloss.Color(hex)) }
+	s := styles{
+		name: fg(c.Name).Bold(true), dim: fg(c.Dim), text: fg(c.Text), gold: fg(c.Gold),
+		key: fg(c.Gold).Bold(true), err: fg(c.Red),
+		bars: map[string]string{"food": "#ffb35c", "joy": "#ff6f9c", "energy": "#7fb2ff", "bond": "#c4f05a"},
+	}
+	if light {
+		s.bars = map[string]string{"food": "#d9822b", "joy": "#d64a80", "energy": "#3d7be0", "bond": "#5f9e1a"}
+	}
+	return s
+}
 
 var moon = art.Sprite{".SS.", "SS..", "SS..", ".SS."}
 
@@ -120,16 +131,16 @@ func (m *model) scene() art.Sprite {
 func (m *model) header() string {
 	st := m.st
 	mood := m.mood()
-	left := nameStyle.Render(st.Name) + dimStyle.Render(" is ") + textStyle.Render(moodWords[mood])
-	right := goldStyle.Render(fmt.Sprintf("🦴 %d", st.Treats)) + dimStyle.Render(fmt.Sprintf("   streak %d   best %d", st.Streak, st.BestStreak))
+	left := m.sty.name.Render(st.Name) + m.sty.dim.Render(" is ") + m.sty.text.Render(moodWords[mood])
+	right := m.sty.gold.Render(fmt.Sprintf("🦴 %d", st.Treats)) + m.sty.dim.Render(fmt.Sprintf("   streak %d   best %d", st.Streak, st.BestStreak))
 	gap := max(1, sceneW-lipgloss.Width(left)-lipgloss.Width(right))
 	return left + strings.Repeat(" ", gap) + right
 }
 
 func (m *model) bar(label string, v float64) string {
 	n := int(v/10 + .5)
-	fill := lipgloss.NewStyle().Foreground(lipgloss.Color(barColour[label])).Render(strings.Repeat("█", n))
-	return dimStyle.Render(fmt.Sprintf("%-7s", label)) + fill + dimStyle.Render(strings.Repeat("░", 10-n)) + "   "
+	fill := lipgloss.NewStyle().Foreground(lipgloss.Color(m.sty.bars[label])).Render(strings.Repeat("█", n))
+	return m.sty.dim.Render(fmt.Sprintf("%-7s", label)) + fill + m.sty.dim.Render(strings.Repeat("░", 10-n)) + "   "
 }
 
 func (m *model) bars() string {
@@ -141,13 +152,13 @@ func (m *model) footer() string {
 	var caption string
 	switch {
 	case m.err != "":
-		caption = lipgloss.NewStyle().Foreground(lipgloss.Color("#ff6b6b")).Render(m.err)
+		caption = m.sty.err.Render(m.err)
 	case m.mode == tricks:
 		caption = m.trickMenu()
 	case m.mode == fetching:
 		caption = m.fetchCaption()
 	case m.tick < m.captUntil:
-		caption = textStyle.Render(m.caption)
+		caption = m.sty.text.Render(m.caption)
 	}
 	caption = truncate(caption, sceneW)
 	keys := []string{"p", "pet", "f", "feed", "b", "fetch", "t", "tricks", "?", "help", "q", "quit"}
@@ -156,9 +167,9 @@ func (m *model) footer() string {
 	}
 	var k []string
 	for i := 0; i < len(keys); i += 2 {
-		k = append(k, keyStyle.Render(keys[i])+dimStyle.Render(" "+keys[i+1]))
+		k = append(k, m.sty.key.Render(keys[i])+m.sty.dim.Render(" "+keys[i+1]))
 	}
-	return caption + "\n" + strings.Join(k, dimStyle.Render("  ·  "))
+	return caption + "\n" + strings.Join(k, m.sty.dim.Render("  ·  "))
 }
 
 func (m *model) trickMenu() string {
@@ -166,12 +177,12 @@ func (m *model) trickMenu() string {
 	for i, t := range pet.Tricks {
 		label := fmt.Sprintf("%d %s", i+1, t.Name)
 		if m.st.Knows(t.ID) {
-			parts = append(parts, goldStyle.Render(label))
+			parts = append(parts, m.sty.gold.Render(label))
 		} else {
-			parts = append(parts, dimStyle.Render(label))
+			parts = append(parts, m.sty.dim.Render(label))
 		}
 	}
-	return strings.Join(parts, dimStyle.Render(" · "))
+	return strings.Join(parts, m.sty.dim.Render(" · "))
 }
 
 // compact is the room for small terminals: little Spot and the stats.
@@ -190,19 +201,19 @@ func (m *model) compact() string {
 	pic := art.Render(a.Frame(m.tick, fps), m.pal, m.profile)
 	st := m.st
 	text := []string{
-		nameStyle.Render(st.Name) + dimStyle.Render(" is ") + textStyle.Render(moodWords[m.mood()]),
-		dimStyle.Render(fmt.Sprintf("food %3.0f  joy %3.0f", st.Food, st.Joy)),
-		dimStyle.Render(fmt.Sprintf("energy %3.0f  bond %3.0f", st.Energy, st.Bond)),
-		goldStyle.Render(fmt.Sprintf("🦴 %d", st.Treats)) + dimStyle.Render(fmt.Sprintf("  streak %d", st.Streak)),
+		m.sty.name.Render(st.Name) + m.sty.dim.Render(" is ") + m.sty.text.Render(moodWords[m.mood()]),
+		m.sty.dim.Render(fmt.Sprintf("food %3.0f  joy %3.0f", st.Food, st.Joy)),
+		m.sty.dim.Render(fmt.Sprintf("energy %3.0f  bond %3.0f", st.Energy, st.Bond)),
+		m.sty.gold.Render(fmt.Sprintf("🦴 %d", st.Treats)) + m.sty.dim.Render(fmt.Sprintf("  streak %d", st.Streak)),
 	}
 	room := m.w - 26 // the picture and the gap next to it
 	if m.w < 50 {
 		room = m.w - 2
 	}
 	if m.tick < m.captUntil {
-		text = append(text, textStyle.Render(truncate(m.caption, max(10, room))))
+		text = append(text, m.sty.text.Render(truncate(m.caption, max(10, room))))
 	}
-	text = append(text, keyStyle.Render("p")+dimStyle.Render(" pet ")+keyStyle.Render("f")+dimStyle.Render(" feed ")+keyStyle.Render("q")+dimStyle.Render(" quit"))
+	text = append(text, m.sty.key.Render("p")+m.sty.dim.Render(" pet ")+m.sty.key.Render("f")+m.sty.dim.Render(" feed ")+m.sty.key.Render("q")+m.sty.dim.Render(" quit"))
 	block := strings.Join(text, "\n")
 	if m.w >= 50 && m.h >= 8 {
 		block = lipgloss.JoinHorizontal(lipgloss.Center, strings.Join(pic, "\n"), "  ", block)

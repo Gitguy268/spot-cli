@@ -68,7 +68,9 @@ func TestEventRecordsOnlyTests(t *testing.T) {
 	if face == "" {
 		t.Fatal("no face printed")
 	}
-	capture(t, func() { run([]string{"_event", "--shell", "zsh", "--exit", "1", "--since", "1700000000.5", "--", "BREAK=1", "go", "test", "./..."}) })
+	capture(t, func() {
+		run([]string{"_event", "--shell", "zsh", "--exit", "1", "--since", "1700000000.5", "--", "BREAK=1", "go", "test", "./..."})
+	})
 	capture(t, func() { run([]string{"_event", "--shell", "bash", "--exit", "0", "--", "go", "test", "./..."}) })
 	capture(t, func() { run([]string{"_event", "--exit", "130", "--", "go", "test"}) })
 	st, _ := s.Load(time.Now())

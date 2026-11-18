@@ -139,7 +139,7 @@ func (m *model) fetchScene() art.Sprite {
 
 func (m *model) fetchCaption() string {
 	g := m.fetch
-	score := goldStyle.Render(fmt.Sprintf("🎾 %d", g.catches)) + dimStyle.Render(fmt.Sprintf("   misses %d/%d", g.misses, maxMisses))
+	score := m.sty.gold.Render(fmt.Sprintf("🎾 %d", g.catches)) + m.sty.dim.Render(fmt.Sprintf("   misses %d/%d", g.misses, maxMisses))
 	var say string
 	switch g.phase {
 	case flying:
@@ -151,5 +151,5 @@ func (m *model) fetchCaption() string {
 	case chasing:
 		say = m.st.Name + " chases it down and brings it back"
 	}
-	return score + "   " + textStyle.Render(say)
+	return score + "   " + m.sty.text.Render(say)
 }
