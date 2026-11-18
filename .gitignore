@@ -1,0 +1,6 @@
+/spot
+/dist/
+*.test
+*.out
+.DS_Store
+._*
