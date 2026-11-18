@@ -195,11 +195,18 @@ func (m *model) compact() string {
 		dimStyle.Render(fmt.Sprintf("energy %3.0f  bond %3.0f", st.Energy, st.Bond)),
 		goldStyle.Render(fmt.Sprintf("🦴 %d", st.Treats)) + dimStyle.Render(fmt.Sprintf("  streak %d", st.Streak)),
 	}
+	room := m.w - 26 // the picture and the gap next to it
+	if m.w < 50 {
+		room = m.w - 2
+	}
 	if m.tick < m.captUntil {
-		text = append(text, textStyle.Render(truncate(m.caption, max(10, m.w-26))))
+		text = append(text, textStyle.Render(truncate(m.caption, max(10, room))))
 	}
 	text = append(text, keyStyle.Render("p")+dimStyle.Render(" pet ")+keyStyle.Render("f")+dimStyle.Render(" feed ")+keyStyle.Render("q")+dimStyle.Render(" quit"))
-	block := lipgloss.JoinHorizontal(lipgloss.Center, strings.Join(pic, "\n"), "  ", strings.Join(text, "\n"))
+	block := strings.Join(text, "\n")
+	if m.w >= 50 && m.h >= 8 {
+		block = lipgloss.JoinHorizontal(lipgloss.Center, strings.Join(pic, "\n"), "  ", block)
+	}
 	return lipgloss.Place(m.w, m.h, lipgloss.Center, lipgloss.Center, block)
 }
 
