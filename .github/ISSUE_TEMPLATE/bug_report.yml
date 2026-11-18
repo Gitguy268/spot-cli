@@ -1,0 +1,67 @@
+name: Bug report
+description: Something in spot does not work.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: What happened, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: To reproduce
+      description: The commands you ran and the keys you pressed.
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: dropdown
+    id: part
+    attributes:
+      label: Where
+      options:
+        - Shell hook (prompt face or reaction after a test)
+        - spot run
+        - The room (spot)
+        - Other commands (status, feed, tricks…)
+    validations:
+      required: true
+  - type: dropdown
+    id: shell
+    attributes:
+      label: Shell
+      options:
+        - zsh
+        - bash
+        - fish
+        - PowerShell
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: OS
+      options:
+        - macOS
+        - Linux
+        - Windows
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      placeholder: "spot version, shell version, terminal app (and prompt tool, like starship or p10k)"
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Screenshots help a lot with drawing problems. `spot status --json` and `spot config` show the state and config paths.

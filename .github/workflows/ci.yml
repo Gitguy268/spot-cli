@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      - name: gofmt
+        shell: bash
+        run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+
+      - run: go vet ./...
+
+      - run: go test -race ./...
+
+      - name: Build
+        shell: bash
+        run: CGO_ENABLED=0 go build -trimpath -o spot$(go env GOEXE) ./cmd/spot
+
+      - name: Frames on the web page match the binary
+        if: runner.os == 'Linux'
+        run: |
+          go run ./internal/cmd/frames
+          git diff --exit-code site/
+
+      - name: Install fish
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends fish zsh
+
+      - name: Hooks in real shells (zsh, bash, fish)
+        if: runner.os != 'Windows'
+        run: python3 tests/shell_smoke.py ./spot
+
+      - name: PowerShell hook
+        shell: pwsh
+        run: |
+          $env:SPOT_HOME = Join-Path $env:RUNNER_TEMP spot
+          $env:SPOT_CONFIG = $env:SPOT_HOME
+          $exe = (Resolve-Path ./spot*).Path | Where-Object { $_ -notmatch '\.go$' } | Select-Object -First 1
+          Invoke-Expression (& $exe init pwsh --prompt | Out-String)
+          $p = prompt
+          if (-not $global:SPOT_FACE -or $p -notmatch 'U') { throw "no face: '$global:SPOT_FACE' / '$p'" }
+          & $exe run -- go version
+          if ($LASTEXITCODE -ne 0) { throw "spot run lost the exit code" }
+          & $exe run -- go no-such-command
+          if ($LASTEXITCODE -eq 0) { throw "spot run hid a failure" }
+          $s = & $exe status --json | ConvertFrom-Json
+          if ($s.runs -ne 2 -or $s.passes -ne 1) { throw "state: $($s | ConvertTo-Json)" }
+
+  links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check links in the docs
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --no-progress --exclude-path site/frames.js --exclude 'github.com/Gitguy268/spot-cli/(releases|security|issues)' README.md CONTRIBUTING.md SECURITY.md CHANGELOG.md site/index.html
+          fail: true

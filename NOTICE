@@ -1,0 +1,33 @@
+spot
+Copyright (c) 2026 Lucas Van De Weerd. Licensed under the MIT License (see LICENSE).
+
+Spot is a real dog: a black labrador with a red collar who belongs to the
+author. The pixel art of him in internal/art was drawn for this project and is
+covered by the MIT License like the code.
+
+The MIT grant covers spot's own code and art only. spot is built with the
+Go modules below, each under its own licence (see go.mod for exact versions).
+spot is not affiliated with or endorsed by any of these projects.
+
+- Bubble Tea, Lip Gloss, colorprofile, ultraviolet, x/ansi, x/term, x/termios
+  and x/windows, Copyright (c) Charmbracelet, Inc. MIT License.
+  https://github.com/charmbracelet
+- TOML, Copyright (c) 2013 TOML authors. MIT License.
+  https://github.com/BurntSushi/toml
+- displaywidth and uax29, Copyright (c) Matt Sherman. MIT License.
+  https://github.com/clipperhouse
+- go-colorful, Copyright (c) 2013 Lucas Beyer. MIT License.
+  https://github.com/lucasb-eyer/go-colorful
+- go-runewidth, Copyright (c) 2016 Yasuhiro Matsumoto. MIT License.
+  https://github.com/mattn/go-runewidth
+- cancelreader, Copyright (c) 2022 Erik Geiser and Christian Muehlhaeuser.
+  MIT License. https://github.com/muesli/cancelreader
+- uniseg, Copyright (c) 2019 Oliver Kuederle. MIT License.
+  https://github.com/rivo/uniseg
+- terminfo, Copyright (c) 2016 Anmol Sethi. MIT License.
+  https://github.com/xo/terminfo
+- golang.org/x/sync and golang.org/x/sys, Copyright 2009 The Go Authors.
+  BSD 3-Clause License. https://go.googlesource.com
+
+Only for the pictures in docs/ (not part of the binary): they were recorded
+with VHS (MIT, Charmbracelet) using the Catppuccin terminal themes (MIT).

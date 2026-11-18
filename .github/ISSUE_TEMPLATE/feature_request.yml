@@ -1,0 +1,20 @@
+name: Feature request
+description: An idea for Spot.
+title: "[Idea] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What should Spot do?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: When would you use it? A new trick, a test runner Spot doesn't know yet, a shell, a prompt tool…
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Anything you tried instead
