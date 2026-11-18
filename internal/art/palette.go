@@ -71,8 +71,8 @@ var Dark = Palette{
 	'f': hex("#8e5a2e"), // kibble shadow
 	'A': hex("#c4f05a"), // tennis ball
 	'a': hex("#8fbf2a"), // tennis ball seam
-	'D': hex("#b8a6d9"), // rug
-	'd': hex("#8e7cb3"), // rug stripe
+	'D': hex("#3a3354"), // rug
+	'd': hex("#4f4672"), // rug stripe
 	'C': hex("#e9eefc"), // blanket
 	'c': hex("#9aa6d8"), // blanket check
 	'X': hex("#7fb2ff"), // tear
@@ -92,5 +92,7 @@ var Light = func() Palette {
 	p['M'] = hex("#30323f")
 	p['Z'] = hex("#5a6bb8")
 	p['C'] = hex("#cfd7f5")
+	p['D'] = hex("#e4ddf3")
+	p['d'] = hex("#cdc2e8")
 	return p
 }()

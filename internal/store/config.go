@@ -13,6 +13,9 @@ type Config struct {
 	// Reactions after a test run: "full" (animation), "short" (one still
 	// picture and a line) or "off".
 	Reactions string `toml:"reactions"`
+	// Theme picks Spot's colours: "auto", "dark" or "light". Auto looks at
+	// COLORFGBG in the shell and asks the terminal in the full-screen app.
+	Theme string `toml:"theme"`
 	// Prompt face style: "face" (coloured kaomoji), "emoji" or "ascii".
 	Prompt string `toml:"prompt"`
 	// TestCommands replaces the built-in list of test commands.
@@ -58,6 +61,11 @@ func LoadConfig() (Config, error) {
 	if os.Getenv("SPOT_QUIET") != "" {
 		c.Reactions = "off"
 	}
+	switch c.Theme {
+	case "auto", "dark", "light":
+	default:
+		c.Theme = "auto"
+	}
 	switch c.Prompt {
 	case "face", "emoji", "ascii":
 	default:
@@ -72,6 +80,10 @@ const Example = `# spot config. Every line is optional.
 # What Spot does after a test run: "full" (a short animation),
 # "short" (one still picture and a line) or "off".
 reactions = "full"
+
+# Colours: "auto", "dark" or "light". Spot has a light rim on dark
+# terminals so a black dog doesn't disappear into a black background.
+theme = "auto"
 
 # Prompt face: "face" (coloured), "emoji" or "ascii".
 prompt = "face"
